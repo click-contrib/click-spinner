@@ -1,16 +1,21 @@
 language: python
 python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-
+- '2.7'
+- '3.4'
+- '3.5'
 notifications:
   email:
-    - yoav@yoavram.com
-
+  - yoav@yoavram.com
 install:
-  - pip install click
-  - python setup.py install
-
+- pip install click
+- python setup.py install
 script: py.test
-
+deploy:
+  provider: pypi
+  user: yoavram
+  password:
+    secure: sSpR5tBWQxRVwnmQjI4jQ0PBGA6/2HDbgJFFt8QgVWHG4lmW0K2K1F2o098j7iYFwZEx1VeNnYNIOOxf1OKilrBVCNv2EMjTQsB9wsHcT5KMEIFEaMEhactYwdZj2poF4FM+xpsfhf7Cuwc2rCojsqRr3bgsqBZj/lHSn1qAAetNvsgak6/9doYnx4tgH6NpW5DCA33vNOBx6v54EotJ1hJ/QtKg/OJUnd6jRKsdj/bLTw0MeB7TJXp9i7rbYV3y36o2Lw/Hz1Tm4dWQUKL4jEWk9/wJKK37auyDJrsREcm9qmS8r3m48l3sFUj1cWrt6AzwdFmdn0X+fS7eWuZ5nw29t5PimxQGsfC3DpICqNkwW95XXHA2HnLjWvlQV3VntdN80/rtLgDRkl6FEaMffo7Pgh/byDvCxiJy+S4brXm9KjKW1LEYjWRP66SiPWTJnZji0gY0bvmdFCRp09QcsGdbBSldsa8VmPkH6nlffdWMNfjPVtvU/x7WICUZHkUSwL1WhJT+v6/tef4I7kqRzVnAHPPxRzr7nuurI4F4OUm6lyzxFfxqUJleKm9pD3Oh5K7Yn9+xkypcxiDLRj0IpGyMDlixTDvcRRdBkRitQTayhDFR58wQ3LTwdlju4Iq347QYg30p0giEHQW37yo848Oa2zCAnI3rqj3/cWuRQ38=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: click-contrib/click-spinner

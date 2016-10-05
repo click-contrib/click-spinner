@@ -26,6 +26,8 @@ Introduced in [PR #649](https://github.com/pallets/click/pull/649).
 pip install click-spinner
 ```
 
+Supports Python 2.7 and 3.
+
 ## Authors
 
 - Yoav Ram (@yoavram)

@@ -15,3 +15,15 @@ def test_spinner():
     result = runner.invoke(cli, [])
     assert result.exception is None
 
+
+def test_spinner_as():
+    @click.command()
+    def cli():
+       spinner = click_spinner.spinner()
+       with spinner as sp:
+           assert sp == spinner
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [])
+    assert result.exception is None
+

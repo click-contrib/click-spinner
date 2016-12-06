@@ -8,10 +8,12 @@ class Spinner(object):
     spinner_cycle = itertools.cycle(['-', '/', '|', '\\'])
 
     def __init__(self):
-        self.stop_running = threading.Event()
-        self.spin_thread = threading.Thread(target=self.init_spin)
+        self.stop_running = None
+        self.spin_thread = None
 
     def start(self):
+        self.stop_running = threading.Event()
+        self.spin_thread = threading.Thread(target=self.init_spin)
         self.spin_thread.start()
 
     def stop(self):

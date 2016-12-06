@@ -36,6 +36,7 @@ class Spinner(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
+        return False
 
 
 def spinner(force=False):

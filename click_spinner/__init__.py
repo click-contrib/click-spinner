@@ -7,18 +7,21 @@ import itertools
 class Spinner(object):
     spinner_cycle = itertools.cycle(['-', '/', '|', '\\'])
 
-    def __init__(self):
+    def __init__(self, force=False):
+        self._force = force
         self.stop_running = None
         self.spin_thread = None
 
     def start(self):
-        self.stop_running = threading.Event()
-        self.spin_thread = threading.Thread(target=self.init_spin)
-        self.spin_thread.start()
+        if sys.stdout.isatty() or self._force:
+            self.stop_running = threading.Event()
+            self.spin_thread = threading.Thread(target=self.init_spin)
+            self.spin_thread.start()
 
     def stop(self):
-        self.stop_running.set()
-        self.spin_thread.join()
+        if self.spin_thread:
+            self.stop_running.set()
+            self.spin_thread.join()
 
     def init_spin(self):
         while not self.stop_running.is_set():
@@ -34,9 +37,16 @@ class Spinner(object):
         self.stop()
 
 
-def spinner():
+def spinner(force=False):
     """This function creates a context manager that is used to display a
-    spinner as long as the context has not exited.
+    spinner on stdout as long as the context has not exited.
+
+    The spinner is created only if stdout is not redirected, or if the spinner
+    is forced using the `force` parameter.
+
+    Parameters:
+
+      force (bool): Force creation of spinner even when stdout is redirected.
 
     Example usage::
 
@@ -45,7 +55,7 @@ def spinner():
             do_something_else()
 
     """
-    return Spinner()
+    return Spinner(force)
 
 
 from ._version import get_versions

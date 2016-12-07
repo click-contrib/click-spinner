@@ -18,8 +18,9 @@ setup(
     description='Spinner for Click',
     extras_require={
         'test': [
-            'click'
+            'click',
             'pytest',
+            'six',
         ]
     }
 )

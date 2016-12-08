@@ -11,6 +11,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     long_description=readme,
     packages=['click_spinner'],
+    package_data={'click-spinner': ['README.md']},
     url='https://github.com/click-contrib/click-spinner',
     license='MIT',
     author='Yoav Ram',

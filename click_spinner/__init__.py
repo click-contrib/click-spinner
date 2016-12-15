@@ -38,7 +38,8 @@ class Spinner(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
         if self.beep:
-            print("\7", end='', flush=True)
+            sys.stdout.write('\7')
+            sys.stdout.flush()
         return False
 
 

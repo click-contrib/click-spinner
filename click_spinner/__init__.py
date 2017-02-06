@@ -30,6 +30,7 @@ class Spinner(object):
             sys.stdout.flush()
             time.sleep(0.25)
             sys.stdout.write('\b')
+            sys.stdout.flush()
 
     def __enter__(self):
         self.start()

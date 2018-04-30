@@ -7,13 +7,16 @@ import itertools
 class Spinner(object):
     spinner_cycle = itertools.cycle(['-', '/', '|', '\\'])
 
-    def __init__(self, beep=False, force=False):
+    def __init__(self, beep=False, disable=False, force=False):
+        self.disable = disable
         self.beep = beep
         self.force = force
         self.stop_running = None
         self.spin_thread = None
 
     def start(self):
+        if self.disable:
+            return
         if sys.stdout.isatty() or self.force:
             self.stop_running = threading.Event()
             self.spin_thread = threading.Thread(target=self.init_spin)
@@ -37,6 +40,8 @@ class Spinner(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.disable:
+            return False
         self.stop()
         if self.beep:
             sys.stdout.write('\7')
@@ -44,7 +49,7 @@ class Spinner(object):
         return False
 
 
-def spinner(beep=False, force=False):
+def spinner(beep=False, disable=False, force=False):
     """This function creates a context manager that is used to display a
     spinner on stdout as long as the context has not exited.
 
@@ -55,6 +60,8 @@ def spinner(beep=False, force=False):
     ----------
     beep : bool
         Beep when spinner finishes.
+    disable : bool
+        Hide spinner.
     force : bool
         Force creation of spinner even when stdout is redirected.
 
@@ -66,7 +73,7 @@ def spinner(beep=False, force=False):
             do_something_else()
 
     """
-    return Spinner(beep, force)
+    return Spinner(beep, disable, force)
 
 
 from ._version import get_versions

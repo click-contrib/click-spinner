@@ -32,5 +32,6 @@ Supports Python 2.7 and 3.
 
 ## Authors
 
-- Yoav Ram (@yoavram)
-- Andreas Maier (@andy-maier)
+- @yoavram
+- @andy-maier
+- @AdrienPensart

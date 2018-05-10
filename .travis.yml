@@ -21,3 +21,4 @@ deploy:
     tags: true
     distributions: sdist bdist_wheel
     repo: click-contrib/click-spinner
+    python: '3.6'

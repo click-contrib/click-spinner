@@ -1,8 +1,9 @@
+from io import open
 from setuptools import setup
 
 import versioneer
 
-with open('README.md') as f:
+with open('README.md', encoding="utf8") as f:
     readme = f.read()
 
 setup(

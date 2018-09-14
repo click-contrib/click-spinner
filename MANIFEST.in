@@ -1,3 +1,4 @@
 include versioneer.py
 include click_spinner/_version.py
 include README.md
+include tests/test_spinner.py

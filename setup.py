@@ -11,6 +11,7 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     long_description=readme,
+    long_description_content_type="text/markdown",
     packages=['click_spinner'],
     package_data={'click-spinner': ['README.md']},
     url='https://github.com/click-contrib/click-spinner',

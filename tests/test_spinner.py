@@ -63,13 +63,10 @@ def test_spinner_redirect_force():
     @click.command()
     def cli():
        stdout_io = StringIO()
-       saved_stdout = sys.stdout
-       sys.stdout = stdout_io  # redirect stdout to a string buffer
-       spinner = click_spinner.Spinner(force=True)
+       spinner = click_spinner.Spinner(force=True, stream=stdout_io)
        spinner.start()
        time.sleep(1)  # allow time for a few spins
        spinner.stop()
-       sys.stdout = saved_stdout
        stdout_io.flush()
        stdout_str = stdout_io.getvalue()
        assert len(stdout_str) > 0

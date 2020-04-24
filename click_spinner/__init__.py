@@ -7,17 +7,18 @@ import itertools
 class Spinner(object):
     spinner_cycle = itertools.cycle(['-', '/', '|', '\\'])
 
-    def __init__(self, beep=False, disable=False, force=False):
+    def __init__(self, beep=False, disable=False, force=False, stream=sys.stdout):
         self.disable = disable
         self.beep = beep
         self.force = force
+        self.stream = stream
         self.stop_running = None
         self.spin_thread = None
 
     def start(self):
         if self.disable:
             return
-        if sys.stdout.isatty() or self.force:
+        if self.stream.isatty() or self.force:
             self.stop_running = threading.Event()
             self.spin_thread = threading.Thread(target=self.init_spin)
             self.spin_thread.start()
@@ -29,11 +30,11 @@ class Spinner(object):
 
     def init_spin(self):
         while not self.stop_running.is_set():
-            sys.stdout.write(next(self.spinner_cycle))
-            sys.stdout.flush()
+            self.stream.write(next(self.spinner_cycle))
+            self.stream.flush()
             time.sleep(0.25)
-            sys.stdout.write('\b')
-            sys.stdout.flush()
+            self.stream.write('\b')
+            self.stream.flush()
 
     def __enter__(self):
         self.start()
@@ -44,12 +45,12 @@ class Spinner(object):
             return False
         self.stop()
         if self.beep:
-            sys.stdout.write('\7')
-            sys.stdout.flush()
+            self.stream.write('\7')
+            self.stream.flush()
         return False
 
 
-def spinner(beep=False, disable=False, force=False):
+def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
     """This function creates a context manager that is used to display a
     spinner on stdout as long as the context has not exited.
 
@@ -73,7 +74,7 @@ def spinner(beep=False, disable=False, force=False):
             do_something_else()
 
     """
-    return Spinner(beep, disable, force)
+    return Spinner(beep, disable, force, stream)
 
 
 from ._version import get_versions

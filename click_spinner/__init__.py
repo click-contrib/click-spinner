@@ -1,6 +1,5 @@
 import sys
 import threading
-import time
 import itertools
 
 
@@ -32,7 +31,7 @@ class Spinner(object):
         while not self.stop_running.is_set():
             self.stream.write(next(self.spinner_cycle))
             self.stream.flush()
-            time.sleep(0.25)
+            self.stop_running.wait(0.25)
             self.stream.write('\b')
             self.stream.flush()
 

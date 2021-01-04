@@ -1,4 +1,3 @@
-
 # This file helps to compute a version number in source trees obtained from
 # git-archive tarball (such as those provided by githubs download-from-tag
 # feature). Distribution tarballs (built by setup.py sdist) and build
@@ -15,9 +14,42 @@ import os
 import re
 import subprocess
 import sys
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    TypedDict,
+    TypeVar,
+    Union,
+)
+
+keywords_dict = TypedDict("keywords_dict", {"refnames": str, "full": str})
+git_versions = TypedDict(
+    "git_versions",
+    {
+        "version": str,
+        "full-revisionid": Optional[str],
+        "dirty": Optional[Union[str, bool]],
+        "error": Optional[str],
+    },
+)
+pieces_dict = TypedDict(
+    "pieces_dict",
+    {
+        "long": str,
+        "short": str,
+        "error": Optional[str],
+        "dirty": bool,
+        "closest-tag": str,
+        "distance": int,
+    },
+)
 
 
-def get_keywords():
+def get_keywords() -> keywords_dict:
     """Get the keywords needed to look up the version information."""
     # these strings will be replaced by git during git-archive.
     # setup.py/versioneer.py will grep for the variable names, so they must
@@ -25,15 +57,23 @@ def get_keywords():
     # get_keywords().
     git_refnames = "$Format:%d$"
     git_full = "$Format:%H$"
-    keywords = {"refnames": git_refnames, "full": git_full}
+    keywords: keywords_dict = {"refnames": git_refnames, "full": git_full}
     return keywords
 
 
 class VersioneerConfig:
     """Container for Versioneer configuration parameters."""
 
+    def __init__(self) -> None:
+        self.VCS: str
+        self.style: str
+        self.tag_prefix: str
+        self.parentdir_prefix: str
+        self.versionfile_source: str
+        self.verbose: bool
 
-def get_config():
+
+def get_config() -> "VersioneerConfig":
     """Create, populate and return the VersioneerConfig() object."""
     # these strings are filled in when 'setup.py versioneer' creates
     # _version.py
@@ -51,56 +91,69 @@ class NotThisMethod(Exception):
     """Exception raised if a method is not valid for the current scenario."""
 
 
-LONG_VERSION_PY = {}
-HANDLERS = {}
+F = TypeVar("F", bound=Callable[..., Any])
+
+HANDLERS: Dict[str, Dict[str, Callable[[F], F]]] = {}
 
 
-def register_vcs_handler(vcs, method):  # decorator
+def register_vcs_handler(vcs: str, method: str) -> Callable[[F], F]:  # decorator
     """Decorator to mark a method as the handler for a particular VCS."""
-    def decorate(f):
+
+    def decorate(f: F) -> F:
         """Store f in HANDLERS[vcs][method]."""
         if vcs not in HANDLERS:
             HANDLERS[vcs] = {}
         HANDLERS[vcs][method] = f
         return f
+
     return decorate
 
 
-def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False):
+def run_command(
+    commands: List[str],
+    args: List[str],
+    cwd: Optional[Union[str, bytes, os.PathLike[str]]] = None,
+    verbose: bool = False,
+    hide_stderr: bool = False,
+) -> Optional[Union[bytes, str]]:
     """Call the given command(s)."""
     assert isinstance(commands, list)
     p = None
     for c in commands:
+        dispcmd = str([c] + args)
         try:
-            dispcmd = str([c] + args)
             # remember shell=False, so use git.cmd on windows, not just git
-            p = subprocess.Popen([c] + args, cwd=cwd, stdout=subprocess.PIPE,
-                                 stderr=(subprocess.PIPE if hide_stderr
-                                         else None))
+            p = subprocess.Popen(
+                [c] + args,
+                cwd=cwd,
+                stdout=subprocess.PIPE,
+                stderr=(subprocess.PIPE if hide_stderr else None),
+            )
             break
-        except EnvironmentError:
-            e = sys.exc_info()[1]
-            if e.errno == errno.ENOENT:
+        except EnvironmentError as error:
+            if error.errno == errno.ENOENT:
                 continue
             if verbose:
                 print("unable to run %s" % dispcmd)
-                print(e)
+                print(error)
             return None
     else:
         if verbose:
             print("unable to find command, tried %s" % (commands,))
         return None
     stdout = p.communicate()[0].strip()
-    if sys.version_info[0] >= 3:
-        stdout = stdout.decode()
     if p.returncode != 0:
         if verbose:
             print("unable to run %s (error)" % dispcmd)
         return None
+    if sys.version_info[0] >= 3:
+        return stdout.decode()
     return stdout
 
 
-def versions_from_parentdir(parentdir_prefix, root, verbose):
+def versions_from_parentdir(
+    parentdir_prefix: str, root: str, verbose: bool
+) -> git_versions:
     """Try to determine the version from the parent directory name.
 
     Source tarballs conventionally unpack into a directory that includes
@@ -109,22 +162,26 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
     dirname = os.path.basename(root)
     if not dirname.startswith(parentdir_prefix):
         if verbose:
-            print("guessing rootdir is '%s', but '%s' doesn't start with "
-                  "prefix '%s'" % (root, dirname, parentdir_prefix))
+            print(
+                f"guessing rootdir is {root}, but {dirname} doesn't start with prefix {parentdir_prefix}"
+            )
         raise NotThisMethod("rootdir doesn't start with parentdir_prefix")
-    return {"version": dirname[len(parentdir_prefix):],
-            "full-revisionid": None,
-            "dirty": False, "error": None}
+    return {
+        "version": dirname[len(parentdir_prefix) :],
+        "full-revisionid": None,
+        "dirty": False,
+        "error": None,
+    }
 
 
 @register_vcs_handler("git", "get_keywords")
-def git_get_keywords(versionfile_abs):
+def git_get_keywords(versionfile_abs: Union[str, bytes]) -> keywords_dict:
     """Extract version information from the given file."""
     # the code embedded in _version.py can just fetch the value of these
     # keywords. When used from setup.py, we don't want to import _version.py,
     # so we do it with a regexp instead. This function is not used from
     # _version.py.
-    keywords = {}
+    keywords: keywords_dict
     try:
         f = open(versionfile_abs, "r")
         for line in f.readlines():
@@ -143,7 +200,9 @@ def git_get_keywords(versionfile_abs):
 
 
 @register_vcs_handler("git", "keywords")
-def git_versions_from_keywords(keywords, tag_prefix, verbose):
+def git_versions_from_keywords(
+    keywords: keywords_dict, tag_prefix: str, verbose: bool
+) -> git_versions:
     """Get version information from git keywords."""
     if not keywords:
         raise NotThisMethod("no keywords at all, weird")
@@ -156,7 +215,7 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
     # starting in git-1.8.3, tags are listed as "tag: foo-1.0" instead of
     # just "foo-1.0". If we see a "tag: " prefix, prefer those.
     TAG = "tag: "
-    tags = set([r[len(TAG):] for r in refs if r.startswith(TAG)])
+    tags = set([r[len(TAG) :] for r in refs if r.startswith(TAG)])
     if not tags:
         # Either we're using git < 1.8.3, or there really are no tags. We use
         # a heuristic: assume all version tags have a digit. The old git %d
@@ -165,31 +224,40 @@ def git_versions_from_keywords(keywords, tag_prefix, verbose):
         # between branches and tags. By ignoring refnames without digits, we
         # filter out many common branch names like "release" and
         # "stabilization", as well as "HEAD" and "master".
-        tags = set([r for r in refs if re.search(r'\d', r)])
+        tags = set([r for r in refs if re.search(r"\d", r)])
         if verbose:
-            print("discarding '%s', no digits" % ",".join(refs-tags))
+            print("discarding '%s', no digits" % ",".join(refs - tags))
     if verbose:
         print("likely tags: %s" % ",".join(sorted(tags)))
     for ref in sorted(tags):
         # sorting will prefer e.g. "2.0" over "2.0rc1"
         if ref.startswith(tag_prefix):
-            r = ref[len(tag_prefix):]
+            r = ref[len(tag_prefix) :]
             if verbose:
                 print("picking %s" % r)
-            return {"version": r,
-                    "full-revisionid": keywords["full"].strip(),
-                    "dirty": False, "error": None
-                    }
+            return {
+                "version": r,
+                "full-revisionid": keywords["full"].strip(),
+                "dirty": False,
+                "error": None,
+            }
     # no suitable tags, so version is "0+unknown", but full hex is still there
     if verbose:
         print("no suitable tags, using unknown + full revision id")
-    return {"version": "0+unknown",
-            "full-revisionid": keywords["full"].strip(),
-            "dirty": False, "error": "no suitable tags"}
+    return {
+        "version": "0+unknown",
+        "full-revisionid": keywords["full"].strip(),
+        "dirty": False,
+        "error": "no suitable tags",
+    }
 
 
+# Ignore type annotation for run_comannd
+# This is since it can only be the function run_command
 @register_vcs_handler("git", "pieces_from_vcs")
-def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
+def git_pieces_from_vcs(  # type: ignore
+    tag_prefix: str, root: str, verbose: bool, run_command=run_command
+) -> pieces_dict:
     """Get version from 'git describe' in the root of the source tree.
 
     This only gets called if the git-archive 'subst' keywords were *not*
@@ -206,10 +274,19 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
         GITS = ["git.cmd", "git.exe"]
     # if there is a tag matching tag_prefix, this yields TAG-NUM-gHEX[-dirty]
     # if there isn't one, this yields HEX[-dirty] (no NUM)
-    describe_out = run_command(GITS, ["describe", "--tags", "--dirty",
-                                      "--always", "--long",
-                                      "--match", "%s*" % tag_prefix],
-                               cwd=root)
+    describe_out = run_command(
+        GITS,
+        [
+            "describe",
+            "--tags",
+            "--dirty",
+            "--always",
+            "--long",
+            "--match",
+            "%s*" % tag_prefix,
+        ],
+        cwd=root,
+    )
     # --long was added in git-1.5.5
     if describe_out is None:
         raise NotThisMethod("'git describe' failed")
@@ -219,30 +296,37 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
         raise NotThisMethod("'git rev-parse' failed")
     full_out = full_out.strip()
 
-    pieces = {}
-    pieces["long"] = full_out
-    pieces["short"] = full_out[:7]  # maybe improved later
-    pieces["error"] = None
-
     # parse describe_out. It will be like TAG-NUM-gHEX[-dirty] or HEX[-dirty]
     # TAG might have hyphens.
     git_describe = describe_out
 
     # look for -dirty suffix
     dirty = git_describe.endswith("-dirty")
-    pieces["dirty"] = dirty
+
+    count_out = run_command(
+        GITS, ["rev-list", "HEAD", "--count"], cwd=root
+    )  # total number of commits
+
+    pieces: pieces_dict = {
+        "long": full_out,
+        "short": full_out[:7],
+        "error": None,
+        "dirty": dirty,
+        "closest-tag": "",
+        "distance": int(count_out),
+    }
+
     if dirty:
-        git_describe = git_describe[:git_describe.rindex("-dirty")]
+        git_describe = git_describe[: git_describe.rindex("-dirty")]
 
     # now we have TAG-NUM-gHEX or HEX
 
     if "-" in git_describe:
         # TAG-NUM-gHEX
-        mo = re.search(r'^(.+)-(\d+)-g([0-9a-f]+)$', git_describe)
+        mo = re.search(r"^(.+)-(\d+)-g([0-9a-f]+)$", git_describe)
         if not mo:
             # unparseable. Maybe git-describe is misbehaving?
-            pieces["error"] = ("unable to parse git-describe output: '%s'"
-                               % describe_out)
+            pieces["error"] = "unable to parse git-describe output: '%s'" % describe_out
             return pieces
 
         # tag
@@ -251,10 +335,12 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
             if verbose:
                 fmt = "tag '%s' doesn't start with prefix '%s'"
                 print(fmt % (full_tag, tag_prefix))
-            pieces["error"] = ("tag '%s' doesn't start with prefix '%s'"
-                               % (full_tag, tag_prefix))
+            pieces["error"] = "tag '%s' doesn't start with prefix '%s'" % (
+                full_tag,
+                tag_prefix,
+            )
             return pieces
-        pieces["closest-tag"] = full_tag[len(tag_prefix):]
+        pieces["closest-tag"] = full_tag[len(tag_prefix) :]
 
         # distance: number of commits since tag
         pieces["distance"] = int(mo.group(2))
@@ -262,24 +348,17 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
         # commit: short hex revision ID
         pieces["short"] = mo.group(3)
 
-    else:
-        # HEX: no tags
-        pieces["closest-tag"] = None
-        count_out = run_command(GITS, ["rev-list", "HEAD", "--count"],
-                                cwd=root)
-        pieces["distance"] = int(count_out)  # total number of commits
-
     return pieces
 
 
-def plus_or_dot(pieces):
+def plus_or_dot(pieces: pieces_dict) -> Union[Literal["."], Literal["+"]]:
     """Return a + if we don't already have one, else return a ."""
     if "+" in pieces.get("closest-tag", ""):
         return "."
     return "+"
 
 
-def render_pep440(pieces):
+def render_pep440(pieces: pieces_dict) -> str:
     """Build up version string, with post-release "local version identifier".
 
     Our goal: TAG[+DISTANCE.gHEX[.dirty]] . Note that if you
@@ -297,14 +376,13 @@ def render_pep440(pieces):
                 rendered += ".dirty"
     else:
         # exception #1
-        rendered = "0+untagged.%d.g%s" % (pieces["distance"],
-                                          pieces["short"])
+        rendered = "0+untagged.%d.g%s" % (pieces["distance"], pieces["short"])
         if pieces["dirty"]:
             rendered += ".dirty"
     return rendered
 
 
-def render_pep440_pre(pieces):
+def render_pep440_pre(pieces: pieces_dict) -> str:
     """TAG[.post.devDISTANCE] -- No -dirty.
 
     Exceptions:
@@ -320,7 +398,7 @@ def render_pep440_pre(pieces):
     return rendered
 
 
-def render_pep440_post(pieces):
+def render_pep440_post(pieces: pieces_dict) -> str:
     """TAG[.postDISTANCE[.dev0]+gHEX] .
 
     The ".dev0" means dirty. Note that .dev0 sorts backwards
@@ -347,7 +425,7 @@ def render_pep440_post(pieces):
     return rendered
 
 
-def render_pep440_old(pieces):
+def render_pep440_old(pieces: pieces_dict) -> str:
     """TAG[.postDISTANCE[.dev0]] .
 
     The ".dev0" means dirty.
@@ -369,7 +447,7 @@ def render_pep440_old(pieces):
     return rendered
 
 
-def render_git_describe(pieces):
+def render_git_describe(pieces: pieces_dict) -> str:
     """TAG[-DISTANCE-gHEX][-dirty].
 
     Like 'git describe --tags --dirty --always'.
@@ -389,7 +467,7 @@ def render_git_describe(pieces):
     return rendered
 
 
-def render_git_describe_long(pieces):
+def render_git_describe_long(pieces: pieces_dict) -> str:
     """TAG-DISTANCE-gHEX[-dirty].
 
     Like 'git describe --tags --dirty --always -long'.
@@ -409,13 +487,15 @@ def render_git_describe_long(pieces):
     return rendered
 
 
-def render(pieces, style):
+def render(pieces: pieces_dict, style: str) -> git_versions:
     """Render the given version pieces into the requested style."""
     if pieces["error"]:
-        return {"version": "unknown",
-                "full-revisionid": pieces.get("long"),
-                "dirty": None,
-                "error": pieces["error"]}
+        return {
+            "version": "unknown",
+            "full-revisionid": pieces.get("long"),
+            "dirty": None,
+            "error": pieces["error"],
+        }
 
     if not style or style == "default":
         style = "pep440"  # the default
@@ -435,11 +515,15 @@ def render(pieces, style):
     else:
         raise ValueError("unknown style '%s'" % style)
 
-    return {"version": rendered, "full-revisionid": pieces["long"],
-            "dirty": pieces["dirty"], "error": None}
+    return {
+        "version": rendered,
+        "full-revisionid": pieces["long"],
+        "dirty": pieces["dirty"],
+        "error": None,
+    }
 
 
-def get_versions():
+def get_versions() -> git_versions:
     """Get version information or return default if unable to do so."""
     # I am in _version.py, which lives at ROOT/VERSIONFILE_SOURCE. If we have
     # __file__, we can work backwards from there to the root. Some
@@ -450,8 +534,7 @@ def get_versions():
     verbose = cfg.verbose
 
     try:
-        return git_versions_from_keywords(get_keywords(), cfg.tag_prefix,
-                                          verbose)
+        return git_versions_from_keywords(get_keywords(), cfg.tag_prefix, verbose)
     except NotThisMethod:
         pass
 
@@ -460,12 +543,15 @@ def get_versions():
         # versionfile_source is the relative path from the top of the source
         # tree (where the .git directory might live) to this file. Invert
         # this to find the root from __file__.
-        for i in cfg.versionfile_source.split('/'):
+        for i in cfg.versionfile_source.split("/"):
             root = os.path.dirname(root)
     except NameError:
-        return {"version": "0+unknown", "full-revisionid": None,
-                "dirty": None,
-                "error": "unable to find root of source tree"}
+        return {
+            "version": "0+unknown",
+            "full-revisionid": None,
+            "dirty": None,
+            "error": "unable to find root of source tree",
+        }
 
     try:
         pieces = git_pieces_from_vcs(cfg.tag_prefix, root, verbose)
@@ -479,6 +565,9 @@ def get_versions():
     except NotThisMethod:
         pass
 
-    return {"version": "0+unknown", "full-revisionid": None,
-            "dirty": None,
-            "error": "unable to compute version"}
+    return {
+        "version": "0+unknown",
+        "full-revisionid": None,
+        "dirty": None,
+        "error": "unable to compute version",
+    }

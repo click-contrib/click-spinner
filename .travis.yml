@@ -8,10 +8,12 @@ notifications:
   email:
   - yoav@yoavram.com
 install:
-- pip install click
-- pip install six
-- python setup.py install
-script: py.test
+- pip install click pytest six mypy isort black
+script:
+- pytest
+- isort --check-only .
+- black --check .
+- mypy --strict --pretty click_spinner
 deploy:
   provider: pypi
   user: yoavram

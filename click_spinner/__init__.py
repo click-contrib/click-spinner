@@ -18,15 +18,15 @@ class Spinner(object):
         direction: str = "counter-clockwise",
     ):
         if not isinstance(beep, bool):
-            raise TypeError(f"must be bool, not {type(beep).__name__}")
+            raise TypeError("must be bool, not %s" % (type(beep).__name__))
         self.beep = beep
 
         if not isinstance(disable, bool):
-            raise TypeError(f"must be bool, not {type(disable).__name__}")
+            raise TypeError("must be bool, not %s" % (type(disable).__name__))
         self.disable = disable
 
         if not isinstance(force, bool):
-            raise TypeError(f"must be bool, not {type(force).__name__}")
+            raise TypeError("must be bool, not %s" % (type(force).__name__))
         self.force = force
 
         self.stream = stream
@@ -34,7 +34,7 @@ class Spinner(object):
         self.spin_thread = None
 
         if not isinstance(direction, str):
-            raise TypeError(f"must be str, not {type(direction).__name__}")
+            raise TypeError("must be str, not %s" % (type(direction).__name__))
         if direction == "clockwise":
             self.spinner_iter = [
                 element for element in reversed(self.spinner_iter)
@@ -42,7 +42,9 @@ class Spinner(object):
         elif direction == "counter-clockwise":
             pass
         else:
-            raise ValueError(f"unsupported value '{direction}' for direction")
+            raise ValueError(
+                "unsupported value '%s' for direction" % (direction)
+            )
         self.direction = direction
 
         self.spinner_cycle = itertools.cycle(self.spinner_iter)
@@ -117,16 +119,16 @@ def spinner(
 
     """
     if not isinstance(beep, bool):
-        raise TypeError(f"must be bool, not {type(beep).__name__}")
+        raise TypeError("must be bool, not %s" % (type(beep).__name__))
 
     if not isinstance(beep, bool):
-        raise TypeError(f"must be bool, not {type(disable).__name__}")
+        raise TypeError("must be bool, not %s" % (type(disable).__name__))
 
     if not isinstance(force, bool):
-        raise TypeError(f"must be bool, not {type(beep).__name__}")
+        raise TypeError("must be bool, not %s" % (type(force).__name__))
 
     if not isinstance(direction, str):
-        raise TypeError(f"must be str, not {type(beep).__name__}")
+        raise TypeError("must be str, not %s" % (type(direction).__name__))
 
     return Spinner(beep, disable, force, stream, direction)
 

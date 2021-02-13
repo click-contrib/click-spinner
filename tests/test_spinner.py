@@ -127,10 +127,8 @@ def test_spinner_direction():
     @click.command()
     def cli():
         with click_spinner.spinner() as sp:
-            assert sp.direction == "clockwise"
-            assert sp.spinner_iter == [
-                element for element in reversed(click_spinner._iter_vals)
-            ]
+            assert sp.direction == "counter-clockwise"
+            assert sp.spinner_iter == click_spinner._iter_vals
 
     runner = CliRunner()
     result = runner.invoke(cli, [])

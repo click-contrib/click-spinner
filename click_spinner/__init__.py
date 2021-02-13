@@ -11,11 +11,11 @@ class Spinner(object):
 
     def __init__(
         self,
-        beep: bool = False,
-        disable: bool = False,
-        force: bool = False,
+        beep=False,
+        disable=False,
+        force=False,
         stream=sys.stdout,
-        direction: str = "counter-clockwise",
+        direction="counter-clockwise",
     ):
         if not isinstance(beep, bool):
             raise TypeError("must be bool, not %s" % (type(beep).__name__))
@@ -85,11 +85,11 @@ class Spinner(object):
 
 
 def spinner(
-    beep: bool = False,
-    disable: bool = False,
-    force: bool = False,
+    beep=False,
+    disable=False,
+    force=False,
     stream=sys.stdout,
-    direction: str = "counter-clockwise",
+    direction="counter-clockwise",
 ):
     """This function creates a context manager that is used to display a
     spinner on stdout as long as the context has not exited.

@@ -1,18 +1,53 @@
 import sys
 import threading
 import itertools
+from ._version import get_versions
+
+_iter_vals = ["-", "/", "|", "\\"]
 
 
 class Spinner(object):
-    spinner_cycle = itertools.cycle(['-', '/', '|', '\\'])
+    spinner_iter = _iter_vals
 
-    def __init__(self, beep=False, disable=False, force=False, stream=sys.stdout):
-        self.disable = disable
+    def __init__(
+        self,
+        beep=False,
+        disable=False,
+        force=False,
+        stream=sys.stdout,
+        direction="counter-clockwise",
+    ):
+        if not isinstance(beep, bool):
+            raise TypeError("must be bool, not %s" % (type(beep).__name__))
         self.beep = beep
+
+        if not isinstance(disable, bool):
+            raise TypeError("must be bool, not %s" % (type(disable).__name__))
+        self.disable = disable
+
+        if not isinstance(force, bool):
+            raise TypeError("must be bool, not %s" % (type(force).__name__))
         self.force = force
+
         self.stream = stream
         self.stop_running = None
         self.spin_thread = None
+
+        if not isinstance(direction, str):
+            raise TypeError("must be str, not %s" % (type(direction).__name__))
+        if direction == "clockwise":
+            self.spinner_iter = [
+                element for element in reversed(self.spinner_iter)
+            ]
+        elif direction == "counter-clockwise":
+            pass
+        else:
+            raise ValueError(
+                "unsupported value '%s' for direction" % (direction)
+            )
+        self.direction = direction
+
+        self.spinner_cycle = itertools.cycle(self.spinner_iter)
 
     def start(self):
         if self.disable:
@@ -32,7 +67,7 @@ class Spinner(object):
             self.stream.write(next(self.spinner_cycle))
             self.stream.flush()
             self.stop_running.wait(0.25)
-            self.stream.write('\b')
+            self.stream.write("\b")
             self.stream.flush()
 
     def __enter__(self):
@@ -44,12 +79,18 @@ class Spinner(object):
             return False
         self.stop()
         if self.beep:
-            self.stream.write('\7')
+            self.stream.write("\7")
             self.stream.flush()
         return False
 
 
-def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
+def spinner(
+    beep=False,
+    disable=False,
+    force=False,
+    stream=sys.stdout,
+    direction="counter-clockwise",
+):
     """This function creates a context manager that is used to display a
     spinner on stdout as long as the context has not exited.
 
@@ -58,12 +99,16 @@ def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
 
     Parameters
     ----------
-    beep : bool
+    beep : bool, default = False
         Beep when spinner finishes.
-    disable : bool
+    disable : bool, default = False
         Hide spinner.
-    force : bool
+    force : bool, default = False
         Force creation of spinner even when stdout is redirected.
+    direction: str, default = "clockwise"
+        Direction of spinner. Supported values are:
+            - "clockwise"
+            - "counter-clockwise"
 
     Example
     -------
@@ -73,9 +118,20 @@ def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
             do_something_else()
 
     """
-    return Spinner(beep, disable, force, stream)
+    if not isinstance(beep, bool):
+        raise TypeError("must be bool, not %s" % (type(beep).__name__))
+
+    if not isinstance(beep, bool):
+        raise TypeError("must be bool, not %s" % (type(disable).__name__))
+
+    if not isinstance(force, bool):
+        raise TypeError("must be bool, not %s" % (type(force).__name__))
+
+    if not isinstance(direction, str):
+        raise TypeError("must be str, not %s" % (type(direction).__name__))
+
+    return Spinner(beep, disable, force, stream, direction)
 
 
-from ._version import get_versions
-__version__ = get_versions()['version']
+__version__ = get_versions()["version"]
 del get_versions

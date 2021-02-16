@@ -41,12 +41,12 @@ import time
     help="""Amount of time to let spinner spin in program.""",
 )
 def hello(beep, disable, force, direction, duration):
-    """Simple CLI that shows inputs to click_spinner.spinner."""
+    """Simple CLI that shows inputs to click_spinner.spinner"""
     with click_spinner.spinner(
         beep=beep, disable=disable, force=force, direction=direction
     ):
         time.sleep(duration)
-    click.echo("That's how it works!")
+    click.echo("Hello there!")
 
 
 if __name__ == "__main__":

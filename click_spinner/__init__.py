@@ -76,6 +76,5 @@ def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
     return Spinner(beep, disable, force, stream)
 
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+from . import _version
+__version__ = _version.get_versions()['version']

@@ -48,7 +48,7 @@ class Spinner(object):
             if self.beep:
                 self.stream.write('\7')
                 self.stream.flush()
-            self.stream.write('\b \b')
+            self.stream.write(' \b')
             self.stream.flush()
         return False
 

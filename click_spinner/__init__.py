@@ -13,11 +13,12 @@ class Spinner(object):
         self.stream = stream
         self.stop_running = None
         self.spin_thread = None
+        self.tty_output = self.stream.isatty() or self.force
 
     def start(self):
         if self.disable:
             return
-        if self.stream.isatty() or self.force:
+        if self.tty_output:
             self.stop_running = threading.Event()
             self.spin_thread = threading.Thread(target=self.init_spin)
             self.spin_thread.start()
@@ -43,8 +44,11 @@ class Spinner(object):
         if self.disable:
             return False
         self.stop()
-        if self.beep:
-            self.stream.write('\7')
+        if self.tty_output:
+            if self.beep:
+                self.stream.write('\7')
+                self.stream.flush()
+            self.stream.write(' \b')
             self.stream.flush()
         return False
 
@@ -64,6 +68,8 @@ def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
         Hide spinner.
     force : bool
         Force creation of spinner even when stdout is redirected.
+    stream : IO
+        Stream to write the spinner to.
 
     Example
     -------

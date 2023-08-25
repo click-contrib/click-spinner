@@ -44,8 +44,11 @@ class Spinner(object):
         if self.disable:
             return False
         self.stop()
-        if self.beep and self.tty_output:
-            self.stream.write('\7')
+        if self.tty_output:
+            if self.beep:
+                self.stream.write('\7')
+                self.stream.flush()
+            self.stream.write('\b \b')
             self.stream.flush()
         return False
 

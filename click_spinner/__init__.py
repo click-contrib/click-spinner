@@ -68,6 +68,8 @@ def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
         Hide spinner.
     force : bool
         Force creation of spinner even when stdout is redirected.
+    stream : IO
+        Stream to write the spinner to.
 
     Example
     -------

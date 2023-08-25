@@ -58,6 +58,19 @@ def test_spinner_redirect():
     result = runner.invoke(cli, [])
     assert result.exception is None
 
+def test_spinner_redirect_with_beep():
+    @click.command()
+    def cli():
+       stdout_io = StringIO()
+       with click_spinner.Spinner(beep=True, stream=stdout_io):
+           time.sleep(1)  # allow time for a few spins
+       stdout_str = stdout_io.getvalue()
+       assert len(stdout_str) == 0
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [])
+    assert result.exception is None
+
 
 def test_spinner_redirect_force():
     @click.command()

@@ -33,7 +33,10 @@ class Spinner(object):
             self.stream.flush()
             self.stop_running.wait(0.25)
             self.stream.write('\b')
-            self.stream.flush()
+
+        self.stream.write(' ')
+        self.stream.write('\b')
+        self.stream.flush()
 
     def __enter__(self):
         self.start()

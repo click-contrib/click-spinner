@@ -7,6 +7,7 @@ python:
 notifications:
   email:
   - yoav@yoavram.com
+  - b@ptistefontaine.fr
 install:
 - pip install click
 - pip install six

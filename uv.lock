@@ -104,7 +104,7 @@ dev = [
 dev = [
     { name = "click", specifier = ">=7.1.2" },
     { name = "mypy", specifier = ">=1.14.1" },
-    { name = "pytest", specifier = ">=4.6.11" },
+    { name = "pytest", specifier = ">=8.0" },
     { name = "ruff", specifier = ">=0.0.17" },
 ]
 

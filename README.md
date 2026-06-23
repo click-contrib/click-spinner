@@ -28,7 +28,9 @@ Introduced in [PR #649](https://github.com/pallets/click/pull/649).
 pip install click-spinner
 ```
 
-Supports Python 2.7 and 3.
+Supports Python 3.8+.
+
+For Python &lt;3.8, use v0.1.11.
 
 ## Authors
 

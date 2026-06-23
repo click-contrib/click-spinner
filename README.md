@@ -1,6 +1,6 @@
 # Click Spinner
 
-[![PyPI](https://img.shields.io/pypi/v/click-spinner.svg)](https://pypi.python.org/pypi/click-spinner/) [![Build Status](https://travis-ci.org/click-contrib/click-spinner.svg?branch=master)](https://travis-ci.org/click-contrib/click-spinner)
+[![PyPI](https://img.shields.io/pypi/v/click-spinner.svg)](https://pypi.python.org/pypi/click-spinner/)
 
 Sometimes you would just like to show the user some progress, 
 but a progress bar is not suitable because you don’t know how much longer it would take. 

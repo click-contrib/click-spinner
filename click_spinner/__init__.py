@@ -79,4 +79,4 @@ def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
     return Spinner(beep, disable, force, stream)
 
 
-__version__ = '0.1.11'
+__version__ = '0.2.0'

@@ -79,5 +79,4 @@ def spinner(beep=False, disable=False, force=False, stream=sys.stdout):
     return Spinner(beep, disable, force, stream)
 
 
-from . import _version
-__version__ = _version.get_versions()['version']
+__version__ = '0.1.11'

@@ -3,9 +3,9 @@ name = "click-spinner"
 version = "0.1.11"
 description = "Spinner for Click"
 readme = "README.md"
-license = "MIT"
+license = { text = "MIT" }
 authors = [{ name = "Yoav Ram", email = "yoav@yoavram.com" }]
-requires-python = ">=2.7"
+requires-python = ">=2.7,<4"
 dependencies = []
 
 [project.urls]

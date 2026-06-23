@@ -1,0 +1,41 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        # See https://github.com/actions/python-versions/releases for available versions
+        python-version: [ "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        run: |
+          pipx install uv
+
+      - name: Set up uv and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
+
+      - name: Test
+        run: |
+          ./ci.sh
+
+      - name: Test build
+        run: |
+          uv build

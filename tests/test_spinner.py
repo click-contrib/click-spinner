@@ -2,7 +2,7 @@ import sys
 import os
 import time
 import tempfile
-from six import StringIO
+from io import StringIO
 import click
 from click.testing import CliRunner
 

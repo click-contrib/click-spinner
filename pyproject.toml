@@ -1,0 +1,24 @@
+[project]
+name = "click-spinner"
+version = "0.1.11"
+description = "Spinner for Click"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Yoav Ram", email = "yoav@yoavram.com" }]
+requires-python = ">=2.7"
+dependencies = []
+
+[project.urls]
+Homepage = 'https://github.com/click-contrib/click-spinner'
+
+[dependency-groups]
+dev = [
+    "click>=7.1.2",
+    "pytest>=4.6.11",
+    "ruff>=0.0.17",
+    "six>=1.17.0",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py37"

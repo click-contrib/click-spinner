@@ -37,3 +37,10 @@ For Python &lt;3.8, use v0.1.11.
 - @yoavram
 - @andy-maier
 - @AdrienPensart
+
+## Caveats
+
+Printing (or writing) to **stdout** while a spinner is active will interleave
+with the spinner animation and look garbled. Prefer logging to **stderr**, or
+stop the spinner before printing. See issue #42.
+
